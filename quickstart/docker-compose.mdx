@@ -1,0 +1,56 @@
+---
+title: "Run the full stack with Docker Compose"
+description: "Start all five retail store services together using Docker Compose, with a database password and local port forwarding to port 8888."
+---
+
+Docker Compose runs the full application stack locally — the UI, catalog, cart, orders, and checkout services — along with their database dependencies. This gives you a complete, working microservices environment on your machine.
+
+## Prerequisites
+
+- Docker installed and running on your local machine
+
+## Steps
+
+<Steps>
+  <Step title="Download the Docker Compose file">
+    Fetch the latest release manifest using `wget`:
+
+    ```bash
+    wget https://github.com/aws-containers/retail-store-sample-app/releases/latest/download/docker-compose.yaml
+    ```
+  </Step>
+  <Step title="Start the stack">
+    Start all services with Docker Compose. Set `DB_PASSWORD` to a password of your choice — it's used to configure the database containers:
+
+    ```bash
+    DB_PASSWORD='<some password>' docker compose --file docker-compose.yaml up
+    ```
+
+    <Tip>
+      Use a real password rather than a placeholder. The value you set here is passed to the database containers at startup and must match across services.
+    </Tip>
+
+    Docker will pull all required images on first run, which may take a few minutes depending on your connection speed. Subsequent starts are faster.
+  </Step>
+  <Step title="Open the store in your browser">
+    Once all services have started and reported healthy, open the following URL:
+
+    ```
+    http://localhost:8888
+    ```
+  </Step>
+  <Step title="Stop the stack">
+    Press **Ctrl+C** in the terminal running Docker Compose to stop all containers.
+  </Step>
+  <Step title="Remove containers and resources">
+    To delete the containers and any associated networks created by Docker Compose, run:
+
+    ```bash
+    docker compose -f docker-compose.yaml down
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  The first startup takes longer than usual because Docker needs to pull all service and database images. Once the images are cached locally, subsequent starts are much faster.
+</Note>

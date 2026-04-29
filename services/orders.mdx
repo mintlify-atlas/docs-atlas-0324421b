@@ -1,0 +1,93 @@
+---
+title: "Orders service: order storage and events"
+description: "The Java-based Orders service stores customer orders in PostgreSQL and publishes events via SQS, RabbitMQ, or in-memory messaging providers."
+---
+
+The Orders service is written in Java (Spring Boot) and provides an API for creating and retrieving customer orders. It stores order data in PostgreSQL (or in-memory for development) and publishes order events to a configurable messaging backend — either Amazon SQS, RabbitMQ, or an in-memory provider.
+
+| Language | Persistence                  |
+|----------|------------------------------|
+| Java     | PostgreSQL or in-memory      |
+
+**Messaging providers:** `in-memory`, `sqs`, `rabbitmq`
+
+## Configuration
+
+Set these environment variables to control the service's behavior:
+
+| Name | Description | Default |
+|------|-------------|---------|
+| `PORT` | The port the server listens on | `8080` |
+| `RETAIL_CHECKOUT_PERSISTENCE_PROVIDER` | Persistence provider. Valid values: `in-memory`, `postgres` | `in-memory` |
+| `RETAIL_ORDERS_PERSISTENCE_ENDPOINT` | PostgreSQL database endpoint | `""` |
+| `RETAIL_ORDERS_PERSISTENCE_NAME` | PostgreSQL database name | `""` |
+| `RETAIL_ORDERS_PERSISTENCE_USERNAME` | PostgreSQL username | `""` |
+| `RETAIL_ORDERS_PERSISTENCE_PASSWORD` | PostgreSQL password | `""` |
+| `RETAIL_ORDERS_MESSAGING_PROVIDER` | Messaging provider. Valid values: `in-memory`, `sqs`, `rabbitmq` | `"in-memory"` |
+| `RETAIL_ORDERS_MESSAGING_SQS_TOPIC` | SQS queue name to publish events to | `""` |
+| `RETAIL_ORDERS_MESSAGING_RABBITMQ_ADDRESSES` | RabbitMQ addresses in `host:port` format | `""` |
+| `RETAIL_ORDERS_MESSAGING_RABBITMQ_USERNAME` | RabbitMQ username | `""` |
+| `RETAIL_ORDERS_MESSAGING_RABBITMQ_PASSWORD` | RabbitMQ password | `""` |
+
+<Note>
+  When using `in-memory` for both persistence and messaging, the service runs with no external dependencies. All data is lost when the service restarts.
+</Note>
+
+## Chaos endpoints
+
+The Orders service exposes `/chaos/*` endpoints that let you inject failure conditions for resilience testing:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/chaos/status/{code}` | Forces all API requests to return the given HTTP status code |
+| `DELETE` | `/chaos/status` | Disables the forced status code |
+| `POST` | `/chaos/latency/{delay}` | Adds the specified delay (ms) to all API requests |
+| `DELETE` | `/chaos/latency` | Disables the added latency |
+| `POST` | `/chaos/health` | Causes all health check requests to fail |
+| `DELETE` | `/chaos/health` | Restores normal health check behavior |
+
+<Warning>
+  Chaos endpoints are intended for testing environments only. Do not expose them on production deployments.
+</Warning>
+
+## Running locally
+
+<Steps>
+  <Step title="Install prerequisites">
+    Make sure you have **Java 21** installed on your machine.
+  </Step>
+  <Step title="Start the service">
+    From the `src/orders` directory, run the Spring Boot application:
+
+    ```bash
+    ./mvnw spring-boot:run
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    ```bash
+    curl localhost:8080/orders
+    ```
+  </Step>
+</Steps>
+
+## Running with Docker Compose
+
+A `docker-compose.yml` file is included in `src/orders` to run the service in a container:
+
+<Steps>
+  <Step title="Start the container">
+    ```bash
+    docker compose up
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    Open `http://localhost:8080` in a web browser.
+  </Step>
+  <Step title="Stop and clean up">
+    ```bash
+    docker compose down
+    ```
+  </Step>
+</Steps>
+
+For the full API reference, see [Orders API](/api/orders).

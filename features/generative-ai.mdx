@@ -1,0 +1,63 @@
+---
+title: "Enable the generative AI chatbot"
+description: "Add an AI-powered chat assistant to the retail store UI using Amazon Bedrock or any OpenAI-compatible endpoint, including self-hosted models."
+---
+
+The UI includes an optional chatbot that appears as a button in the bottom-right corner of the store. You can use it to demonstrate basic LLM inference scenarios without any code changes — just configure the right environment variables and point it at your model. The chatbot is disabled by default.
+
+## Enable the chatbot
+
+Set the following environment variable to show the chat button in the UI:
+
+```bash
+RETAIL_UI_CHAT_ENABLED=true
+```
+
+You must also configure a provider. Three providers are available:
+
+<Tabs>
+  <Tab title="Mock">
+    The mock provider returns a hard-coded response and requires no external service. It's the fastest way to verify the chat button appears and the UI is wired up correctly.
+
+    ```bash
+    RETAIL_UI_CHAT_PROVIDER=mock
+    ```
+  </Tab>
+  <Tab title="Amazon Bedrock">
+    Use Amazon Bedrock to invoke a managed foundation model. Set the provider, model ID, and the AWS region where Bedrock API calls should be made:
+
+    ```bash
+    RETAIL_UI_CHAT_PROVIDER=bedrock
+    RETAIL_UI_CHAT_MODEL=anthropic.claude-3-5-sonnet-20241022-v2:0
+    RETAIL_UI_CHAT_BEDROCK_REGION=us-west-2
+    ```
+
+    <Note>
+      The IAM role or ECS task role attached to the UI service must have the `bedrock:InvokeModel` permission for the specified model.
+    </Note>
+  </Tab>
+  <Tab title="OpenAI-compatible">
+    Use any OpenAI-compatible endpoint, including self-hosted models running on your own infrastructure:
+
+    ```bash
+    RETAIL_UI_CHAT_PROVIDER=openai
+    RETAIL_UI_CHAT_MODEL=meta-llama/Meta-Llama-3.1-8B
+    RETAIL_UI_CHAT_OPENAI_BASE_URL=http://localhost:8000
+    RETAIL_UI_CHAT_OPENAI_API_KEY=<YOUR API KEY>
+    ```
+
+    `RETAIL_UI_CHAT_OPENAI_BASE_URL` defaults to `http://localhost:8888` if not set. `RETAIL_UI_CHAT_OPENAI_API_KEY` is optional and only required if your endpoint enforces authentication.
+  </Tab>
+</Tabs>
+
+## Additional configuration
+
+| Variable | Description | Default |
+|---|---|---|
+| `RETAIL_UI_CHAT_TEMPERATURE` | Model sampling temperature | `0.6` |
+| `RETAIL_UI_CHAT_MAX_TOKENS` | Maximum number of tokens in the model response | `300` |
+| `RETAIL_UI_CHAT_PROMPT` | System prompt sent to the model | *(see source)* |
+
+<Tip>
+  Start with `RETAIL_UI_CHAT_PROVIDER=mock` to confirm the chat button renders correctly before connecting a real LLM provider. This avoids troubleshooting UI issues and provider issues at the same time.
+</Tip>

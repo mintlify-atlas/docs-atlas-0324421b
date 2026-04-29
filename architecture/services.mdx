@@ -1,0 +1,94 @@
+---
+title: "Microservices: languages, runtimes, and images"
+description: "Per-service breakdown of the retail store's five microservices — their programming languages, container images, Helm charts, and default ports."
+---
+
+Each of the five retail store services is independently deployable. Every service has its own Dockerfile, Helm chart, and pre-built container image hosted on Amazon ECR Public. All services listen on port `8080` by default and expose the same `PORT` environment variable if you need to override it.
+
+<Note>
+  Pre-built images are available for both x86-64 and ARM64 CPU architectures. Pull the same image tag regardless of your target platform — the registry serves the correct image layer automatically.
+</Note>
+
+## Services
+
+<AccordionGroup>
+  <Accordion title="UI">
+    **Language / runtime:** Java (Spring Boot, requires Java 21)
+
+    The UI service serves the HTML storefront and aggregates API calls to all backend services. It has no persistence of its own — it delegates entirely to the Catalog, Cart, Orders, and Checkout APIs (or falls back to mock implementations when those endpoints are not configured).
+
+    | | |
+    |-|-|
+    | Container image | `public.ecr.aws/aws-containers/retail-store-sample-ui` |
+    | Helm chart | `public.ecr.aws/aws-containers/retail-store-sample-ui-chart` |
+    | Default port | `8080` |
+  </Accordion>
+
+  <Accordion title="Catalog">
+    **Language / runtime:** Go
+
+    The Catalog service exposes a REST API for browsing products. It reads product data from either an in-memory store or a MySQL database, making it easy to run standalone without any external dependencies.
+
+    | | |
+    |-|-|
+    | Container image | `public.ecr.aws/aws-containers/retail-store-sample-catalog` |
+    | Helm chart | `public.ecr.aws/aws-containers/retail-store-sample-catalog-chart` |
+    | Default port | `8080` |
+  </Accordion>
+
+  <Accordion title="Cart">
+    **Language / runtime:** Java (Spring Boot, requires Java 21)
+
+    The Cart service stores customer shopping carts. It supports an in-memory backend for local development and Amazon DynamoDB for production-like deployments.
+
+    | | |
+    |-|-|
+    | Container image | `public.ecr.aws/aws-containers/retail-store-sample-cart` |
+    | Helm chart | `public.ecr.aws/aws-containers/retail-store-sample-cart-chart` |
+    | Default port | `8080` |
+  </Accordion>
+
+  <Accordion title="Orders">
+    **Language / runtime:** Java (Spring Boot, requires Java 21)
+
+    The Orders service persists completed orders. It supports an in-memory store or PostgreSQL. It also supports pluggable messaging backends (in-memory, SQS, or RabbitMQ) for publishing order events.
+
+    | | |
+    |-|-|
+    | Container image | `public.ecr.aws/aws-containers/retail-store-sample-orders` |
+    | Helm chart | `public.ecr.aws/aws-containers/retail-store-sample-orders-chart` |
+    | Default port | `8080` |
+  </Accordion>
+
+  <Accordion title="Checkout">
+    **Language / runtime:** Node.js (>= 16)
+
+    The Checkout service orchestrates the checkout process and calls the Orders service to record completed purchases. Session data can be stored in-memory or in Redis.
+
+    | | |
+    |-|-|
+    | Container image | `public.ecr.aws/aws-containers/retail-store-sample-checkout` |
+    | Helm chart | `public.ecr.aws/aws-containers/retail-store-sample-checkout-chart` |
+    | Default port | `8080` |
+  </Accordion>
+</AccordionGroup>
+
+## Service reference pages
+
+<CardGroup cols={2}>
+  <Card title="UI" icon="display" href="/services/ui">
+    Java storefront — environment variables, theming, and utility endpoints.
+  </Card>
+  <Card title="Catalog" icon="book-open" href="/services/catalog">
+    Go product catalog API — configuration and persistence options.
+  </Card>
+  <Card title="Cart" icon="cart-shopping" href="/services/cart">
+    Java shopping cart API — DynamoDB integration and chaos endpoints.
+  </Card>
+  <Card title="Orders" icon="receipt" href="/services/orders">
+    Java orders API — PostgreSQL and messaging provider configuration.
+  </Card>
+  <Card title="Checkout" icon="credit-card" href="/services/checkout">
+    Node.js checkout orchestrator — Redis session storage and Orders integration.
+  </Card>
+</CardGroup>

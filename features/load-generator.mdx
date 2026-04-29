@@ -1,0 +1,68 @@
+---
+title: "Generate synthetic load for testing"
+description: "Use the built-in Artillery-based load generator to simulate realistic user traffic — run locally via Docker or as a Pod in your Kubernetes cluster."
+---
+
+The load generator uses [Artillery](https://github.com/artilleryio/artillery) scenarios to simulate realistic user traffic through the full purchase flow. It's useful for triggering autoscaling behavior, populating observability dashboards with real traffic patterns, and testing how the application behaves under sustained load.
+
+## Running the load generator
+
+<Tabs>
+  <Tab title="Local (Docker)">
+    A convenience script is included that handles pulling the right images and passing the required arguments. Run the following from the `src/load-generator` directory to see all available options:
+
+    ```bash
+    bash scripts/run-docker.sh --help
+    ```
+  </Tab>
+  <Tab title="Kubernetes (Pod)">
+    You can run the load generator as one or more Pods directly in your cluster. The Pod uses an init container to copy the Artillery scenario scripts into a shared volume before the main container starts.
+
+    Update `http://ui.ui.svc` to match your namespace structure before applying:
+
+    ```bash
+    cat <<'EOF' | kubectl apply -f -
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: load-generator
+    spec:
+      containers:
+      - name: artillery
+        image: artilleryio/artillery:2.0.22
+        args:
+        - "run"
+        - "-t"
+        - "http://ui.ui.svc"
+        - "/scripts/scenario.yml"
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      initContainers:
+      - name: setup
+        image: public.ecr.aws/aws-containers/retail-store-sample-utils:load-gen.1.2.1
+        command:
+        - bash
+        args:
+        - -c
+        - "cp /artillery/* /scripts"
+        volumeMounts:
+        - name: scripts
+          mountPath: "/scripts"
+      volumes:
+      - name: scripts
+        emptyDir: {}
+    EOF
+    ```
+
+    <Note>
+      Match the `retail-store-sample-utils` image tag to the version of the application you are testing to ensure the scenario scripts are compatible.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Use cases
+
+- **Autoscaling demos** — generate sustained traffic to trigger Horizontal Pod Autoscaler or ECS Service Auto Scaling policies
+- **Observability dashboards** — populate Prometheus, Grafana, or CloudWatch with real request data and latency distributions
+- **Resiliency testing** — combine with the [chaos engineering endpoints](/features/chaos-engineering) to observe how the application degrades and recovers under fault injection

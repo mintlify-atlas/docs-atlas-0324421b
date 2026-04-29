@@ -1,0 +1,118 @@
+---
+title: "Deploy to Amazon EKS with Terraform"
+description: "Provision a production-like EKS cluster with all retail store dependencies — RDS, DynamoDB, ElastiCache — using the included Terraform module."
+---
+
+The EKS Terraform module creates a full VPC, an EKS cluster with managed node groups across multiple availability zones, and all application dependency AWS services. Application components are deployed via Helm charts, with optional support for OpenTelemetry and Istio.
+
+<Warning>
+  This module creates AWS resources that will incur costs in your account. Review the resources being created before proceeding, and destroy them when you are done.
+</Warning>
+
+## What's created
+
+| Resource | Details |
+| --- | --- |
+| VPC | Public and private subnets across multiple AZs |
+| EKS cluster | Managed node groups in multiple availability zones |
+| Amazon RDS | Relational database for the catalog and orders services |
+| Amazon DynamoDB | Table for the cart service |
+| Amazon ElastiCache | Cache layer for the application |
+| Helm chart deployments | All application components deployed to the cluster |
+| OpenTelemetry (optional) | AWS Distro for OpenTelemetry addon, collectors, and app configuration |
+| Istio (optional) | Istio service mesh installed and configured |
+
+## Prerequisites
+
+- AWS CLI, Terraform, and kubectl installed locally
+- AWS CLI configured and authenticated with the account you want to deploy to
+
+## Deploy
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/aws-containers/retail-store-sample-app.git
+    ```
+  </Step>
+  <Step title="Navigate to the Terraform directory">
+    ```bash
+    cd retail-store-sample-app/terraform/eks/default
+    ```
+  </Step>
+  <Step title="Initialize Terraform">
+    ```bash
+    terraform init
+    ```
+  </Step>
+  <Step title="Review the plan">
+    ```bash
+    terraform plan
+    ```
+  </Step>
+  <Step title="Apply the configuration">
+    ```bash
+    terraform apply
+    ```
+
+    Terraform will prompt for confirmation before creating resources. The process takes approximately 15 minutes.
+  </Step>
+  <Step title="Configure kubectl">
+    Retrieve the AWS CLI command to configure `kubectl` for the new cluster:
+
+    ```bash
+    terraform output -raw configure_kubectl
+    ```
+
+    The output looks like this:
+
+    ```
+    aws eks --region us-west-2 update-kubeconfig --name retail-store
+    ```
+
+    Run the command shown in the output to update your kubeconfig.
+  </Step>
+  <Step title="Access the application">
+    Retrieve the load balancer address:
+
+    ```bash
+    kubectl get svc -n ui ui-lb
+    ```
+
+    The output looks like this:
+
+    ```
+    NAME    TYPE           CLUSTER-IP      EXTERNAL-IP                                                              PORT(S)        AGE
+    ui-lb   LoadBalancer   172.20.196.69   aec46b0c98b974cc28201c38dbba79b6-1234567678.us-west-2.elb.amazonaws.com   80:32154/TCP   18h
+    ```
+
+    Enter the domain name from the `EXTERNAL-IP` column in your browser. It may take a few minutes for the load balancer to become available.
+  </Step>
+</Steps>
+
+## Variables
+
+| Name | Description | Type | Default | Required |
+| --- | --- | --- | --- | :---: |
+| `environment_name` | Name of the environment used for all created resources | `string` | `retail-store` | yes |
+| `opentelemetry_enabled` | Installs the AWS Distro for OpenTelemetry addon, creates collectors, and configures application components | `bool` | `false` | no |
+| `istio_enabled` | Installs Istio and configures application components for the service mesh | `bool` | `false` | no |
+
+## Outputs
+
+| Name | Description |
+| --- | --- |
+| `configure_kubectl` | AWS CLI command to configure `kubectl` for the EKS cluster |
+
+## Module variants
+
+The repository includes two EKS Terraform variants:
+
+- **default** — deploys all application dependencies using AWS managed services (RDS, DynamoDB, ElastiCache). This is the variant documented on this page.
+- **minimal** — provisions only the EKS cluster and VPC, without deploying application dependency services. Use this if you want to manage dependencies separately.
+
+The minimal variant is available at [`terraform/eks/minimal`](https://github.com/aws-containers/retail-store-sample-app/tree/main/terraform/eks/minimal) in the repository.
+
+<Tip>
+  To enable distributed tracing and logging after deployment, set `opentelemetry_enabled = true` in a `terraform.tfvars` file and run `terraform apply` again.
+</Tip>

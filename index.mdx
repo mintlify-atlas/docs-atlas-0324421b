@@ -1,133 +1,61 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: "AWS Containers Retail Store Sample"
+description: "A microservices retail demo app for learning container platforms on AWS — runs on Docker, Kubernetes, ECS, EKS, and App Runner."
 ---
 
-## Setting up
+The AWS Containers Retail Store Sample is an intentionally over-engineered retail application designed to demonstrate container orchestration patterns, microservices architecture, and AWS-native deployment strategies. It provides a fully functional storefront with product catalog, shopping cart, and checkout — all wired together across five independently deployable services.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Run with Docker" icon="docker" href="/quickstart/docker">
+    Get the application running on your local machine in minutes with a single Docker command.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Run with Docker Compose" icon="layer-group" href="/quickstart/docker-compose">
+    Start the full multi-service stack locally using Docker Compose.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Deploy to Kubernetes" icon="dharmachakra" href="/quickstart/kubernetes">
+    Deploy all services to an existing Kubernetes cluster with a single kubectl command.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Deploy to AWS" icon="aws" href="/deploy/eks">
+    Use Terraform to deploy on Amazon EKS, ECS, or App Runner with managed dependencies.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What's included
 
-Everything you need to create world-class documentation.
+The sample application provides five microservices, each with its own language, persistence layer, and container image — deliberately varied to showcase real-world heterogeneity.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={2}>
+  <Card title="Architecture overview" icon="sitemap" href="/architecture/overview">
+    Understand how the five services interact and what infrastructure each requires.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Service reference" icon="cubes" href="/services/ui">
+    Per-service configuration, environment variables, and utility endpoints.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="Features & configuration" icon="sliders" href="/features/ui-theming">
+    UI theming, generative AI chatbot, observability, and chaos engineering.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="API reference" icon="code" href="/api/catalog">
+    Full API documentation for the Catalog, Cart, Orders, and Checkout services.
   </Card>
-</Columns>
+</CardGroup>
 
-## Make your content agent ready
+## Get started
 
-Make your docs work for humans and AI agents alike.
+<Steps>
+  <Step title="Choose a deployment method">
+    Pick Docker for the fastest local start, Docker Compose for the full stack, Kubernetes for cluster testing, or Terraform for a production-like AWS deployment.
+  </Step>
+  <Step title="Run the application">
+    Follow the quickstart for your chosen platform. The UI is available at `http://localhost:8888` for local deployments.
+  </Step>
+  <Step title="Explore the features">
+    Browse the storefront, inspect the `/info` topology page, enable the AI chatbot, or run the load generator against the live stack.
+  </Step>
+  <Step title="Customize and experiment">
+    Change themes, swap persistence backends, enable Istio or OpenTelemetry, and use chaos endpoints to test resilience.
+  </Step>
+</Steps>
 
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
-  </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
-  </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
-  </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Note>
+  This application is intended for educational and demonstration purposes. It is not designed for production use.
+</Note>

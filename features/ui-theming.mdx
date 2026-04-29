@@ -1,0 +1,52 @@
+---
+title: "Customize the UI theme and appearance"
+description: "Change the retail store's primary color theme using environment variables or URL query parameters — supports default, green, orange, and teal themes."
+---
+
+The UI service ships with four built-in color themes that change the store's primary color palette. Switching themes is useful when running multiple demos side by side and you need each environment to have a visually distinct identity.
+
+## Available themes
+
+Valid values for the theme setting are `default`, `green`, `orange`, and `teal`.
+
+## Setting the theme
+
+There are two ways to apply a theme:
+
+<Steps>
+  <Step title="Environment variable">
+    Set `RETAIL_UI_THEME` to the theme name before starting the service. This persists across restarts and applies to all visitors.
+
+    ```bash
+    RETAIL_UI_THEME=orange
+    ```
+
+    To run the UI container with a specific theme using Docker:
+
+    ```bash
+    docker run -e RETAIL_UI_THEME=orange -p 8888:8080 \
+      public.ecr.aws/aws-containers/retail-store-sample-ui:1.0.0
+    ```
+  </Step>
+  <Step title="URL query parameter">
+    Append `?theme=<name>` to any page in the UI. This sets a cookie in the browser that persists the selected theme between page reloads — no restart required.
+
+    ```
+    http://your-store-url/?theme=teal
+    ```
+  </Step>
+</Steps>
+
+## Additional appearance configuration
+
+The following environment variables control other aspects of the UI's appearance:
+
+| Variable | Description | Default |
+|---|---|---|
+| `RETAIL_UI_THEME` | Color theme name. Valid values: `default`, `green`, `orange`, `teal` | `default` |
+| `RETAIL_UI_DISABLE_DEMO_WARNINGS` | Set to `true` to suppress the warning banners shown on demo deployments | `false` |
+| `RETAIL_UI_PRODUCT_IMAGES_PATH` | Override the file path used to source product images | `` |
+
+<Tip>
+  Set `RETAIL_UI_DISABLE_DEMO_WARNINGS=true` when recording demos or taking screenshots to keep the UI free of banners that indicate demonstration content.
+</Tip>

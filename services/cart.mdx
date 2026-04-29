@@ -1,0 +1,83 @@
+---
+title: "Cart service: shopping cart management"
+description: "The Java-based Cart service stores customer shopping carts in Amazon DynamoDB or in-memory, with chaos injection endpoints for resilience testing."
+---
+
+The Cart service is written in Java (Spring Boot) and provides an API for storing and retrieving customer shopping carts. It defaults to an in-memory store so you can run it without AWS credentials. When you're ready to use a persistent backend, you can configure it to use Amazon DynamoDB.
+
+| Language | Persistence                 |
+|----------|-----------------------------|
+| Java     | Amazon DynamoDB or in-memory |
+
+## Configuration
+
+Set these environment variables to control the service's behavior:
+
+| Name | Description | Default |
+|------|-------------|---------|
+| `PORT` | The port the server listens on | `8080` |
+| `RETAIL_CART_PERSISTENCE_PROVIDER` | Persistence provider. Valid values: `in-memory`, `dynamodb` | `in-memory` |
+| `RETAIL_CART_PERSISTENCE_DYNAMODB_TABLE_NAME` | Name of the DynamoDB table used for persistence | `Items` |
+| `RETAIL_CART_PERSISTENCE_DYNAMODB_ENDPOINT` | DynamoDB endpoint to use (useful for local DynamoDB) | `""` |
+| `RETAIL_CART_PERSISTENCE_DYNAMODB_CREATE_TABLE` | Automatically create the required DynamoDB table | `false` |
+
+<Tip>
+  Set `RETAIL_CART_PERSISTENCE_DYNAMODB_CREATE_TABLE=true` to have the service create the DynamoDB table on startup. This is convenient for development but is not recommended for production.
+</Tip>
+
+## Chaos endpoints
+
+The Cart service exposes `/chaos/*` endpoints that let you inject failure conditions for resilience testing:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/chaos/status/{code}` | Forces all API requests to return the given HTTP status code |
+| `DELETE` | `/chaos/status` | Disables the forced status code |
+| `POST` | `/chaos/latency/{delay}` | Adds the specified delay (ms) to all API requests |
+| `DELETE` | `/chaos/latency` | Disables the added latency |
+| `POST` | `/chaos/health` | Causes all health check requests to fail |
+| `DELETE` | `/chaos/health` | Restores normal health check behavior |
+
+<Warning>
+  Chaos endpoints are intended for testing environments only. Do not expose them on production deployments.
+</Warning>
+
+## Running locally
+
+<Steps>
+  <Step title="Install prerequisites">
+    Make sure you have **Java 21** installed on your machine.
+  </Step>
+  <Step title="Start the service">
+    From the `src/cart` directory, run the Spring Boot application:
+
+    ```bash
+    ./mvnw spring-boot:run
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    Open `http://localhost:8080` in a web browser.
+  </Step>
+</Steps>
+
+## Running with Docker Compose
+
+A `docker-compose.yml` file is included in `src/cart` to run the service in a container:
+
+<Steps>
+  <Step title="Start the container">
+    ```bash
+    docker compose up
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    Open `http://localhost:8080` in a web browser.
+  </Step>
+  <Step title="Stop and clean up">
+    ```bash
+    docker compose down
+    ```
+  </Step>
+</Steps>
+
+For the full API reference, see [Cart API](/api/cart).

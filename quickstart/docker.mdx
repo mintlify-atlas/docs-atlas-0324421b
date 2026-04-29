@@ -1,0 +1,42 @@
+---
+title: "Run the retail store with Docker"
+description: "Run the retail store UI as a single Docker container on your local machine — no backend services or databases required, up in under a minute."
+---
+
+You can run the retail store UI as a single Docker container without standing up any backend services. In this mode, the UI uses built-in mock implementations for the catalog, cart, orders, and checkout APIs — so you can explore the storefront immediately with no additional setup.
+
+## Prerequisites
+
+- Docker installed and running on your local machine
+
+## Steps
+
+<Steps>
+  <Step title="Pull and run the container">
+    Run the following command to start the UI container and forward port 8888 on your machine to port 8080 inside the container:
+
+    ```bash
+    docker run -it --rm -p 8888:8080 public.ecr.aws/aws-containers/retail-store-sample-ui:1.0.0
+    ```
+
+    Docker will pull the image if you don't already have it locally, then start the container. You'll see log output as the application starts up.
+  </Step>
+  <Step title="Open the store in your browser">
+    Once the application is ready, open the following URL in your browser:
+
+    ```
+    http://localhost:8888
+    ```
+
+    You should see the retail store frontend with products loaded from the mock catalog.
+  </Step>
+  <Step title="Stop the container">
+    Press **Ctrl+C** in the terminal where Docker is running. The `--rm` flag ensures the container is automatically removed when it stops.
+  </Step>
+</Steps>
+
+<Info>
+  This single-container mode uses mock data for all backend services. Product listings, cart operations, and checkout flows are all simulated — no database or additional containers are required. To run the full stack with real service-to-service communication, use Docker Compose instead.
+</Info>
+
+Ready to run all five services together? See [Run the full stack with Docker Compose](/quickstart/docker-compose).

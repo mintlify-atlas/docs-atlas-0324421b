@@ -1,0 +1,93 @@
+---
+title: "Persistence backends for each service"
+description: "The storage backends supported by each retail store service — in-memory defaults, MySQL, DynamoDB, PostgreSQL, Redis — and how to switch between them."
+---
+
+Every service defaults to an `in-memory` persistence provider so you can run the full stack without provisioning any external databases. For production-like setups, each service also supports one or more real backends — MySQL, Amazon DynamoDB, PostgreSQL, or Redis — which you enable by setting a single environment variable.
+
+## Persistence matrix
+
+| Service | Default | Production backends |
+|---------|---------|---------------------|
+| UI | No persistence | — |
+| Catalog | in-memory | MySQL |
+| Cart | in-memory | Amazon DynamoDB |
+| Orders | in-memory | PostgreSQL |
+| Checkout | in-memory | Redis |
+
+## Switching providers
+
+### Catalog
+
+Set `RETAIL_CATALOG_PERSISTENCE_PROVIDER` to select the backend:
+
+```bash
+# Use in-memory (default)
+RETAIL_CATALOG_PERSISTENCE_PROVIDER=in-memory
+
+# Use MySQL
+RETAIL_CATALOG_PERSISTENCE_PROVIDER=mysql
+RETAIL_CATALOG_PERSISTENCE_ENDPOINT=<host>
+RETAIL_CATALOG_PERSISTENCE_DB_NAME=catalogdb
+RETAIL_CATALOG_PERSISTENCE_USER=catalog_user
+RETAIL_CATALOG_PERSISTENCE_PASSWORD=<password>
+```
+
+### Cart
+
+Set `RETAIL_CART_PERSISTENCE_PROVIDER` to select the backend:
+
+```bash
+# Use in-memory (default)
+RETAIL_CART_PERSISTENCE_PROVIDER=in-memory
+
+# Use Amazon DynamoDB
+RETAIL_CART_PERSISTENCE_PROVIDER=dynamodb
+RETAIL_CART_PERSISTENCE_DYNAMODB_TABLE_NAME=Items
+RETAIL_CART_PERSISTENCE_DYNAMODB_ENDPOINT=<endpoint>
+```
+
+### Orders
+
+Set `RETAIL_CHECKOUT_PERSISTENCE_PROVIDER` to select the backend:
+
+<Note>
+  The Orders service uses the environment variable name `RETAIL_CHECKOUT_PERSISTENCE_PROVIDER`, not `RETAIL_ORDERS_PERSISTENCE_PROVIDER`. This matches the variable name documented in the Orders service README.
+</Note>
+
+```bash
+# Use in-memory (default)
+RETAIL_CHECKOUT_PERSISTENCE_PROVIDER=in-memory
+
+# Use PostgreSQL
+RETAIL_CHECKOUT_PERSISTENCE_PROVIDER=postgres
+RETAIL_ORDERS_PERSISTENCE_ENDPOINT=<host>
+RETAIL_ORDERS_PERSISTENCE_NAME=<database>
+RETAIL_ORDERS_PERSISTENCE_USERNAME=<user>
+RETAIL_ORDERS_PERSISTENCE_PASSWORD=<password>
+```
+
+### Checkout
+
+Set `RETAIL_CHECKOUT_PERSISTENCE_PROVIDER` to select the backend:
+
+```bash
+# Use in-memory (default)
+RETAIL_CHECKOUT_PERSISTENCE_PROVIDER=in-memory
+
+# Use Redis
+RETAIL_CHECKOUT_PERSISTENCE_PROVIDER=redis
+RETAIL_CHECKOUT_PERSISTENCE_REDIS_URL=<redis-url>
+```
+
+## Important: in-memory state is not durable
+
+<Warning>
+  When using the default `in-memory` provider, all state — product catalog data, cart contents, and orders — is lost when the container restarts. Use external persistence backends for any scenario that requires data to survive a restart.
+</Warning>
+
+## AWS managed services with Terraform
+
+<Tip>
+  When you deploy using the provided Terraform configurations (Amazon EKS, ECS, or App Runner), AWS managed services are provisioned and wired up automatically. RDS provides MySQL and PostgreSQL, Amazon DynamoDB handles cart storage, and Amazon ElastiCache provides Redis — no manual backend configuration required.
+</Tip>

@@ -1,0 +1,79 @@
+---
+title: "Deploy to AWS App Runner with Terraform"
+description: "Use the App Runner Terraform module to deploy the retail store — one App Runner service per component, with VPC egress to managed AWS dependencies."
+---
+
+The App Runner Terraform module creates one App Runner service per application component. The UI service exposes a public endpoint, while backend services communicate over private VPC endpoints. All managed AWS dependencies are accessed through App Runner VPC egress networking.
+
+<Warning>
+  This module creates AWS resources that will incur costs in your account. Review the resources being created before proceeding, and destroy them when you are done.
+</Warning>
+
+<Warning>
+  Due to the complexity of the Terraform configuration, intermittent failures may occur during apply. If `terraform apply` fails, run it again before opening an issue.
+</Warning>
+
+## What's created
+
+| Resource | Details |
+| --- | --- |
+| VPC | Public and private subnets |
+| App Runner services | One service per application component |
+| Public endpoint | UI service exposed publicly via App Runner |
+| Private VPC endpoints | Backend services accessible only within the VPC |
+| Amazon RDS | Relational database for the catalog and orders services |
+| Amazon DynamoDB | Table for the cart service |
+| Amazon ElastiCache | Cache layer for the application, accessed via VPC egress |
+
+## Prerequisites
+
+- AWS CLI and Terraform installed locally
+- AWS CLI configured and authenticated with the account you want to deploy to
+
+## Deploy
+
+<Steps>
+  <Step title="Navigate to the Terraform directory">
+    ```bash
+    cd terraform/apprunner/default
+    ```
+  </Step>
+  <Step title="Initialize Terraform">
+    ```bash
+    terraform init
+    ```
+  </Step>
+  <Step title="Review the plan">
+    ```bash
+    terraform plan
+    ```
+  </Step>
+  <Step title="Apply the configuration">
+    ```bash
+    terraform apply
+    ```
+
+    Terraform will prompt for confirmation before creating resources. The process takes approximately 15 minutes. If the apply fails, run it again.
+  </Step>
+  <Step title="Access the application">
+    Retrieve the application URL from Terraform outputs:
+
+    ```bash
+    terraform output -raw application_url
+    ```
+
+    Enter the URL in your browser to access the application.
+  </Step>
+</Steps>
+
+## Variables
+
+| Name | Description | Type | Default | Required |
+| --- | --- | --- | --- | :---: |
+| `environment_name` | Name of the environment used for all created resources | `string` | `retail-store-ar` | yes |
+
+## Outputs
+
+| Name | Description |
+| --- | --- |
+| `application_url` | URL where the application can be accessed |

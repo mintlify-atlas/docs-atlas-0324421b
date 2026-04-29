@@ -1,0 +1,312 @@
+---
+title: "Checkout API: manage checkout sessions"
+description: REST API for the checkout service — initiate checkout sessions, update shipping details, and submit orders with coordination to the Orders service.
+---
+
+The Checkout API orchestrates the end-to-end checkout flow for the retail store. You use it to retrieve or initialize a checkout session for a customer, update that session with shipping address and delivery preferences, and then submit the order — which triggers coordination with the Orders service to create the final order record. The service runs on port `8080` by default (configurable via the `PORT` environment variable). All request and response bodies are JSON.
+
+---
+
+## GET /checkout/{customerId}
+
+Retrieves the current checkout session for a customer. If no session exists, a new one is initialized. The response includes the customer's cart items, any previously entered shipping address, available shipping rates, and running totals.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose checkout session you want to retrieve.
+</ParamField>
+
+### Response
+
+Returns a `Checkout` object with HTTP `201`.
+
+<ResponseField name="items" type="Item[]">
+  The items in the checkout session, sourced from the customer's cart.
+
+  <Expandable title="Item">
+    <ResponseField name="id" type="string">
+      Product identifier for this item.
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Display name of the product.
+    </ResponseField>
+    <ResponseField name="quantity" type="integer">
+      Number of units in the checkout.
+    </ResponseField>
+    <ResponseField name="price" type="integer">
+      Unit price in the smallest currency unit (e.g. cents).
+    </ResponseField>
+    <ResponseField name="totalCost" type="integer">
+      Total cost for this line item (`quantity × price`) in the smallest currency unit.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="shippingAddress" type="object">
+  The shipping address currently associated with this checkout session.
+
+  <Expandable title="ShippingAddress">
+    <ResponseField name="firstName" type="string">
+      Recipient's first name.
+    </ResponseField>
+    <ResponseField name="lastName" type="string">
+      Recipient's last name.
+    </ResponseField>
+    <ResponseField name="address1" type="string">
+      Primary street address line.
+    </ResponseField>
+    <ResponseField name="address2" type="string">
+      Secondary address line (apartment, suite, etc.).
+    </ResponseField>
+    <ResponseField name="city" type="string">
+      City name.
+    </ResponseField>
+    <ResponseField name="state" type="string">
+      State or province code.
+    </ResponseField>
+    <ResponseField name="zip" type="string">
+      Postal or ZIP code.
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      Customer's email address for order confirmation.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="deliveryOptionToken" type="string">
+  The token identifying the selected shipping/delivery option.
+</ResponseField>
+
+<ResponseField name="shippingRates" type="object">
+  Available shipping rates for the current session.
+
+  <Expandable title="ShippingRates">
+    <ResponseField name="shipmentId" type="string">
+      Identifier for the shipment rate quote.
+    </ResponseField>
+    <ResponseField name="rates" type="ShippingOption[]">
+      List of available shipping options.
+
+      <Expandable title="ShippingOption">
+        <ResponseField name="name" type="string">
+          Display name for the shipping method (e.g. "Standard", "Express").
+        </ResponseField>
+        <ResponseField name="amount" type="integer">
+          Shipping cost in the smallest currency unit (e.g. cents).
+        </ResponseField>
+        <ResponseField name="token" type="string">
+          Opaque token used to select this shipping option when updating the checkout.
+        </ResponseField>
+        <ResponseField name="estimatedDays" type="integer">
+          Estimated number of days for delivery.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="paymentId" type="string">
+  Identifier for the associated payment record.
+</ResponseField>
+
+<ResponseField name="paymentToken" type="string">
+  Token used by the payment provider to process the transaction.
+</ResponseField>
+
+<ResponseField name="subtotal" type="integer">
+  Sum of all item costs before shipping and tax, in the smallest currency unit.
+</ResponseField>
+
+<ResponseField name="shipping" type="integer">
+  Shipping cost in the smallest currency unit.
+</ResponseField>
+
+<ResponseField name="tax" type="integer">
+  Calculated tax amount in the smallest currency unit.
+</ResponseField>
+
+<ResponseField name="total" type="integer">
+  Grand total (`subtotal + shipping + tax`) in the smallest currency unit.
+</ResponseField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/checkout/customer-123"
+```
+
+---
+
+## POST /checkout/{customerId}/update
+
+Updates a checkout session with new shipping details and a selected delivery option. Call this endpoint after the customer enters their shipping address or selects a shipping rate. Returns the updated checkout session.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose checkout session you want to update.
+</ParamField>
+
+### Request body
+
+<ParamField body="items" type="array" required>
+  The items to include in the checkout session.
+
+  <Expandable title="ItemRequest">
+    <ParamField body="id" type="string" required>
+      Product identifier.
+    </ParamField>
+    <ParamField body="name" type="string" required>
+      Display name of the product.
+    </ParamField>
+    <ParamField body="quantity" type="integer" required>
+      Number of units.
+    </ParamField>
+    <ParamField body="price" type="integer" required>
+      Unit price in the smallest currency unit (e.g. cents).
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="shippingAddress" type="object" required>
+  The shipping destination to associate with this checkout.
+
+  <Expandable title="ShippingAddress">
+    <ParamField body="firstName" type="string" required>
+      Recipient's first name.
+    </ParamField>
+    <ParamField body="lastName" type="string" required>
+      Recipient's last name.
+    </ParamField>
+    <ParamField body="address1" type="string" required>
+      Primary street address line.
+    </ParamField>
+    <ParamField body="address2" type="string" required>
+      Secondary address line (apartment, suite, etc.).
+    </ParamField>
+    <ParamField body="city" type="string" required>
+      City name.
+    </ParamField>
+    <ParamField body="state" type="string" required>
+      State or province code.
+    </ParamField>
+    <ParamField body="zip" type="string" required>
+      Postal or ZIP code.
+    </ParamField>
+    <ParamField body="email" type="string" required>
+      Customer's email address.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="deliveryOptionToken" type="string" required>
+  The token of the selected shipping option, obtained from the `shippingRates.rates[].token` field in a previous checkout retrieval.
+</ParamField>
+
+### Response
+
+Returns the updated `Checkout` object with HTTP `201`. The response shape is identical to the [GET /checkout/{customerId}](#get-checkoutcustomerid) response.
+
+### Example
+
+```bash
+curl -X POST "http://localhost:8080/checkout/customer-123/update" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {
+        "id": "PROD001",
+        "name": "Awesome Widget",
+        "quantity": 2,
+        "price": 999
+      }
+    ],
+    "shippingAddress": {
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "address1": "123 Main St",
+      "address2": "",
+      "city": "Seattle",
+      "state": "WA",
+      "zip": "98101",
+      "email": "jane.doe@example.com"
+    },
+    "deliveryOptionToken": "rate_token_abc123"
+  }'
+```
+
+---
+
+## POST /checkout/{customerId}/submit
+
+Submits the checkout session as a final order. The service coordinates with the Orders service to persist the order and returns a confirmation with the new order ID and cost breakdown.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose checkout session you want to submit.
+</ParamField>
+
+### Response
+
+Returns a `CheckoutSubmitted` object with HTTP `201`.
+
+<ResponseField name="orderId" type="string">
+  The unique identifier of the newly created order, as assigned by the Orders service.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  The email address associated with the order, used for confirmation notifications.
+</ResponseField>
+
+<ResponseField name="items" type="Item[]">
+  The line items included in the submitted order.
+
+  <Expandable title="Item">
+    <ResponseField name="id" type="string">
+      Product identifier.
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Display name of the product.
+    </ResponseField>
+    <ResponseField name="quantity" type="integer">
+      Number of units ordered.
+    </ResponseField>
+    <ResponseField name="price" type="integer">
+      Unit price in the smallest currency unit (e.g. cents).
+    </ResponseField>
+    <ResponseField name="totalCost" type="integer">
+      Total cost for this line item in the smallest currency unit.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="subtotal" type="integer">
+  Sum of all item costs before shipping and tax, in the smallest currency unit.
+</ResponseField>
+
+<ResponseField name="shipping" type="integer">
+  Shipping cost applied to the order in the smallest currency unit.
+</ResponseField>
+
+<ResponseField name="tax" type="integer">
+  Tax applied to the order in the smallest currency unit.
+</ResponseField>
+
+<ResponseField name="total" type="integer">
+  Grand total (`subtotal + shipping + tax`) in the smallest currency unit.
+</ResponseField>
+
+### Example
+
+```bash
+curl -X POST "http://localhost:8080/checkout/customer-123/submit"
+```
+
+### Error responses
+
+| Status | Description |
+|--------|-------------|
+| `400`  | Bad Request — the checkout session is incomplete or the request is malformed. |
+| `500`  | Internal Server Error — coordination with the Orders service failed or an unexpected error occurred. |

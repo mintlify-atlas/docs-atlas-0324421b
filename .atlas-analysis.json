@@ -1,0 +1,114 @@
+{
+  "projectType": "infrastructure",
+  "projectName": "AWS Containers Retail Store Sample",
+  "projectDescription": "A sample microservices retail application for demonstrating container platforms on AWS, including Docker, Kubernetes, ECS, EKS, and App Runner deployments.",
+  "theme": "aspen",
+  "primaryColor": "#94cb04",
+  "lightColor": "#545454",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart/docker",
+              "quickstart/docker-compose",
+              "quickstart/kubernetes"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "architecture/overview",
+              "architecture/services",
+              "architecture/persistence"
+            ]
+          },
+          {
+            "group": "Deploy to AWS",
+            "pages": [
+              "deploy/eks",
+              "deploy/ecs",
+              "deploy/apprunner"
+            ]
+          },
+          {
+            "group": "Features & Configuration",
+            "pages": [
+              "features/ui-theming",
+              "features/generative-ai",
+              "features/observability",
+              "features/load-generator",
+              "features/chaos-engineering"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/developer-guide",
+              "contributing/building-images"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Service Reference",
+        "groups": [
+          {
+            "group": "Services",
+            "pages": [
+              "services/ui",
+              "services/catalog",
+              "services/cart",
+              "services/orders",
+              "services/checkout"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "api/catalog",
+              "api/cart",
+              "api/orders",
+              "api/checkout"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Multi-platform container deployment (Docker, Kubernetes, ECS, EKS, App Runner)",
+    "Microservices architecture with 5 independent services (UI, Catalog, Cart, Orders, Checkout)",
+    "Multiple persistence backends (MySQL, DynamoDB, PostgreSQL, Redis, in-memory)",
+    "Prometheus metrics and OpenTelemetry OTLP tracing instrumentation",
+    "Generative AI chatbot via Amazon Bedrock and OpenAI-compatible endpoints",
+    "Chaos engineering utility endpoints for resilience testing",
+    "Pre-built multi-arch container images (x86-64 and ARM64)",
+    "Terraform modules for AWS deployment (EKS, ECS, App Runner)",
+    "Istio service mesh support on Kubernetes",
+    "Load generator for stress testing and autoscaling demos"
+  ],
+  "publicApiSurface": [
+    "GET /catalog/products — List products with filtering and pagination",
+    "GET /catalog/products/{id} — Get product by ID",
+    "GET /catalog/tags — List all product tags",
+    "GET /catalog/size — Get catalog size",
+    "POST /cart — Create or update shopping cart",
+    "GET /cart/{customerId} — Get customer cart",
+    "DELETE /cart/{customerId} — Delete customer cart",
+    "POST /orders — Create a new order",
+    "GET /orders — List orders",
+    "POST /checkout — Initiate checkout session",
+    "GET /utility/status/{code} — Return specific HTTP status code",
+    "GET /utility/headers — Echo request headers",
+    "GET /utility/panic — Trigger application shutdown",
+    "POST /chaos/status/{code} — Inject HTTP status code errors",
+    "POST /chaos/latency/{delay} — Inject response latency",
+    "POST /chaos/health — Cause health checks to fail"
+  ]
+}

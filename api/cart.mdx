@@ -1,0 +1,290 @@
+---
+title: "Cart API: manage customer shopping carts"
+description: REST API for the shopping cart service — create, read, update, and delete customer carts, with item-level add and delete operations.
+---
+
+The Cart API manages per-customer shopping carts. Each cart is keyed by a `customerId` and contains a list of items with quantities and unit prices. You can retrieve or delete an entire cart, merge a guest session cart into a customer cart, and perform item-level create, read, update, and delete operations. All request and response bodies are JSON.
+
+---
+
+## GET /carts/{customerId}
+
+Retrieves the full cart for a customer, including all current items.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose cart you want to retrieve.
+</ParamField>
+
+### Response
+
+Returns a `Cart` object.
+
+<ResponseField name="customerId" type="string">
+  The customer identifier this cart belongs to.
+</ResponseField>
+
+<ResponseField name="items" type="Item[]">
+  The list of items currently in the cart.
+
+  <Expandable title="Item">
+    <ResponseField name="itemId" type="string">
+      Unique identifier for the cart item (corresponds to a product ID).
+    </ResponseField>
+    <ResponseField name="quantity" type="integer">
+      Number of units of this item in the cart.
+    </ResponseField>
+    <ResponseField name="unitPrice" type="integer">
+      Price per unit in the smallest currency unit (e.g. cents).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/carts/customer-123"
+```
+
+---
+
+## DELETE /carts/{customerId}
+
+Deletes the cart for a customer, removing all items. Returns the deleted cart as confirmation.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose cart you want to delete.
+</ParamField>
+
+### Response
+
+Returns the deleted `Cart` object.
+
+<ResponseField name="customerId" type="string">
+  The customer identifier of the deleted cart.
+</ResponseField>
+
+<ResponseField name="items" type="Item[]">
+  The items that were in the cart at the time of deletion.
+
+  <Expandable title="Item">
+    <ResponseField name="itemId" type="string">
+      Unique identifier for the cart item.
+    </ResponseField>
+    <ResponseField name="quantity" type="integer">
+      Number of units that were in the cart.
+    </ResponseField>
+    <ResponseField name="unitPrice" type="integer">
+      Price per unit in the smallest currency unit (e.g. cents).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+```bash
+curl -X DELETE "http://localhost:8080/carts/customer-123"
+```
+
+---
+
+## GET /carts/{customerId}/items
+
+Retrieves all items in a customer's cart as an array.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose cart items you want to list.
+</ParamField>
+
+### Response
+
+Returns an array of `Item` objects.
+
+<ResponseField name="itemId" type="string">
+  Unique identifier for the cart item (corresponds to a product ID).
+</ResponseField>
+
+<ResponseField name="quantity" type="integer">
+  Number of units of this item in the cart.
+</ResponseField>
+
+<ResponseField name="unitPrice" type="integer">
+  Price per unit in the smallest currency unit (e.g. cents).
+</ResponseField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/carts/customer-123/items"
+```
+
+---
+
+## POST /carts/{customerId}/items
+
+Adds a new item to a customer's cart. Returns the created item.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose cart you are adding an item to.
+</ParamField>
+
+### Request body
+
+<ParamField body="itemId" type="string">
+  The product ID to add to the cart.
+</ParamField>
+
+<ParamField body="quantity" type="integer">
+  Number of units to add.
+</ParamField>
+
+<ParamField body="unitPrice" type="integer">
+  Price per unit in the smallest currency unit (e.g. cents).
+</ParamField>
+
+### Response
+
+Returns the created `Item` object with HTTP `201 Created`.
+
+<ResponseField name="itemId" type="string">
+  Unique identifier for the newly created cart item.
+</ResponseField>
+
+<ResponseField name="quantity" type="integer">
+  Number of units added to the cart.
+</ResponseField>
+
+<ResponseField name="unitPrice" type="integer">
+  Price per unit in the smallest currency unit (e.g. cents).
+</ResponseField>
+
+### Example
+
+```bash
+curl -X POST "http://localhost:8080/carts/customer-123/items" \
+  -H "Content-Type: application/json" \
+  -d '{"itemId": "PROD001", "quantity": 2, "unitPrice": 999}'
+```
+
+---
+
+## PATCH /carts/{customerId}/items
+
+Updates an existing item in a customer's cart, for example to change its quantity. Returns HTTP `202 Accepted` on success.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose cart item you want to update.
+</ParamField>
+
+### Request body
+
+<ParamField body="itemId" type="string">
+  The ID of the item to update.
+</ParamField>
+
+<ParamField body="quantity" type="integer">
+  The new quantity for the item.
+</ParamField>
+
+<ParamField body="unitPrice" type="integer">
+  The new unit price for the item in the smallest currency unit (e.g. cents).
+</ParamField>
+
+### Example
+
+```bash
+curl -X PATCH "http://localhost:8080/carts/customer-123/items" \
+  -H "Content-Type: application/json" \
+  -d '{"itemId": "PROD001", "quantity": 5, "unitPrice": 999}'
+```
+
+---
+
+## GET /carts/{customerId}/items/{itemId}
+
+Retrieves a single item from a customer's cart by its item ID.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose cart you are querying.
+</ParamField>
+
+<ParamField path="itemId" type="string" required>
+  The unique identifier of the item to retrieve.
+</ParamField>
+
+### Response
+
+Returns a single `Item` object.
+
+<ResponseField name="itemId" type="string">
+  Unique identifier for the cart item.
+</ResponseField>
+
+<ResponseField name="quantity" type="integer">
+  Number of units of this item in the cart.
+</ResponseField>
+
+<ResponseField name="unitPrice" type="integer">
+  Price per unit in the smallest currency unit (e.g. cents).
+</ResponseField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/carts/customer-123/items/PROD001"
+```
+
+---
+
+## DELETE /carts/{customerId}/items/{itemId}
+
+Removes a single item from a customer's cart. Returns HTTP `202 Accepted` on success.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer whose cart you are modifying.
+</ParamField>
+
+<ParamField path="itemId" type="string" required>
+  The unique identifier of the item to remove from the cart.
+</ParamField>
+
+### Example
+
+```bash
+curl -X DELETE "http://localhost:8080/carts/customer-123/items/PROD001"
+```
+
+---
+
+## GET /carts/{customerId}/merge
+
+Merges the contents of a guest session cart into a customer's cart. Use this after a guest user logs in to preserve their cart items. Returns HTTP `202 Accepted` on success.
+
+### Parameters
+
+<ParamField path="customerId" type="string" required>
+  The unique identifier of the customer cart to merge items into.
+</ParamField>
+
+<ParamField query="sessionId" type="string" required>
+  The session ID of the guest cart whose items should be merged into the customer cart.
+</ParamField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/carts/customer-123/merge?sessionId=guest-session-abc"
+```

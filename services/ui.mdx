@@ -1,0 +1,90 @@
+---
+title: "UI service: storefront and API gateway"
+description: "The Java-based UI service serves the retail store frontend and aggregates calls to all backend services — Catalog, Cart, Orders, and Checkout."
+---
+
+The UI service is the single entry point for all browser traffic. Written in Java (Spring Boot), it renders the HTML storefront and proxies requests to the Catalog, Cart, Orders, and Checkout backend services. When a backend endpoint is not configured, the UI falls back to a built-in mock implementation so you can run a standalone demo without any dependencies.
+
+| Language | Persistence |
+|----------|-------------|
+| Java     | None        |
+
+## Configuration
+
+Set these environment variables to control the service's behavior:
+
+| Name | Description | Default |
+|------|-------------|---------|
+| `PORT` | The port the server listens on | `8080` |
+| `RETAIL_UI_THEME` | UI color theme. Valid values: `default`, `green`, `orange`, `teal` | `"default"` |
+| `RETAIL_UI_DISABLE_DEMO_WARNINGS` | Suppress warning banners shown on demo deployments | `false` |
+| `RETAIL_UI_PRODUCT_IMAGES_PATH` | Override the file path used to source product images | `""` |
+| `RETAIL_UI_ENDPOINTS_CATALOG` | Endpoint of the Catalog API. Set to `false` to use a mock | `false` |
+| `RETAIL_UI_ENDPOINTS_CARTS` | Endpoint of the Cart API. Set to `false` to use a mock | `false` |
+| `RETAIL_UI_ENDPOINTS_ORDERS` | Endpoint of the Orders API. Set to `false` to use a mock | `false` |
+| `RETAIL_UI_ENDPOINTS_CHECKOUT` | Endpoint of the Checkout API. Set to `false` to use a mock | `false` |
+| `RETAIL_UI_CHAT_ENABLED` | Enable the chat bot UI | `false` |
+| `RETAIL_UI_CHAT_PROVIDER` | Chat provider to use. Valid values: `bedrock`, `openai`, `mock` | `""` |
+| `RETAIL_UI_CHAT_MODEL` | Chat model to use (depends on provider) | `""` |
+| `RETAIL_UI_CHAT_TEMPERATURE` | Model temperature | `0.6` |
+| `RETAIL_UI_CHAT_MAX_TOKENS` | Maximum response tokens | `300` |
+| `RETAIL_UI_CHAT_PROMPT` | Model system prompt | (see source) |
+| `RETAIL_UI_CHAT_BEDROCK_REGION` | AWS region for Amazon Bedrock | `""` |
+| `RETAIL_UI_CHAT_OPENAI_BASE_URL` | Base URL for the OpenAI-compatible endpoint | `http://localhost:8888` |
+| `RETAIL_UI_CHAT_OPENAI_API_KEY` | API key for the OpenAI endpoint | `""` |
+
+<Tip>
+  For chat-related configuration, see [Generative AI](/features/generative-ai). For theme configuration, see [UI theming](/features/ui-theming).
+</Tip>
+
+## Utility endpoints
+
+The UI service exposes a set of `/utility/*` endpoints useful for testing, debugging, and resilience scenarios:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/utility/status/{code}` | Returns an HTTP response with the given status code |
+| `GET` | `/utility/headers` | Prints the HTTP headers of the inbound request |
+| `GET` | `/utility/panic` | Shuts down the application with an error code |
+| `POST` | `/utility/echo` | Writes back the POST payload sent |
+| `POST` | `/utility/store` | Writes the payload to a file and returns a hash |
+| `GET` | `/utility/store/{hash}` | Returns a payload previously written to the file system |
+| `GET` | `/utility/stress/{iterations}` | Stresses the CPU with the given number of iterations |
+
+## Running locally
+
+<Steps>
+  <Step title="Install prerequisites">
+    Make sure you have **Java 21** installed on your machine.
+  </Step>
+  <Step title="Start the service">
+    From the `src/ui` directory, run the Spring Boot application:
+
+    ```bash
+    ./mvnw spring-boot:run
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    Open `http://localhost:8080` in a web browser. You should see the retail store storefront.
+  </Step>
+</Steps>
+
+## Running with Docker Compose
+
+A `docker-compose.yml` file is included in `src/ui` to run the service in a container:
+
+<Steps>
+  <Step title="Start the container">
+    ```bash
+    docker compose up
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    Open `http://localhost:8080` in a web browser.
+  </Step>
+  <Step title="Stop and clean up">
+    ```bash
+    docker compose down
+    ```
+  </Step>
+</Steps>

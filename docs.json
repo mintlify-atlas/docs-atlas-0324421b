@@ -1,126 +1,96 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "AWS Containers Retail Store Sample",
+  "theme": "aspen",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#94cb04",
+    "light": "#545454"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "https://media.brand.dev/288cc7c4-5cef-4376-950b-bdf0083eedae.png",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/aws-containers/retail-store-sample-app"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/aws-containers/retail-store-sample-app"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "quickstart/docker",
+              "quickstart/docker-compose",
+              "quickstart/kubernetes"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Architecture",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "architecture/overview",
+              "architecture/services",
+              "architecture/persistence"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Deploy to AWS",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/components",
-              "essentials/reusable-snippets"
+              "deploy/eks",
+              "deploy/ecs",
+              "deploy/apprunner"
             ]
           },
           {
-            "group": "Agent ready",
+            "group": "Features & Configuration",
             "pages": [
-              "agent-ready/prompt",
-              "agent-ready/visibility",
-              "agent-ready/contextual",
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "features/ui-theming",
+              "features/generative-ai",
+              "features/observability",
+              "features/load-generator",
+              "features/chaos-engineering"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/developer-guide",
+              "contributing/building-images"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Service Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Services",
             "pages": [
-              "api-reference/introduction"
+              "services/ui",
+              "services/catalog",
+              "services/cart",
+              "services/orders",
+              "services/checkout"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "API Reference",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/catalog",
+              "api/cart",
+              "api/orders",
+              "api/checkout"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

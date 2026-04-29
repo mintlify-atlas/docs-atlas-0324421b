@@ -1,0 +1,88 @@
+---
+title: "Set up a local development environment for the app"
+description: "Clone the repo, install dependencies with yarn, and use the nx build system to run, test, and build any service component locally."
+---
+
+The repository is a monorepo that uses [nx](https://nx.dev/) to orchestrate builds and tests across all service components. Each component has a consistent set of nx targets, so you can run the same commands against any service regardless of the underlying language or framework.
+
+## Getting started
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/aws-containers/retail-store-sample-app.git
+    cd retail-store-sample-app
+    ```
+  </Step>
+  <Step title="Install dependencies">
+    Run `yarn install` in the root of the repository to install all workspace dependencies:
+
+    ```bash
+    yarn install
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Configuration files for [mise](https://mise.jdx.dev/) are included in the repository. If you install mise, you can set up all language runtimes in one step:
+
+  ```bash
+  mise install
+  ```
+
+  This is the easiest way to get all required language dependencies (Go, Node.js, Java, etc.) without installing them individually.
+</Tip>
+
+## Using nx
+
+You run nx through yarn to ensure you use the version pinned to the workspace. The common targets are:
+
+| Command | Description |
+|---|---|
+| `yarn nx build` | Build a component |
+| `yarn nx test` | Run unit tests |
+| `yarn nx test:integration` | Run integration tests |
+| `yarn nx serve` | Run a component locally on port 8080 |
+| `yarn nx container` | Build a container image |
+
+### Running a single component
+
+Append the component name to run any target against a single service. For example, to test the UI component:
+
+```bash
+yarn nx test ui
+```
+
+### Running all services
+
+Use `run-many` with the `service` tag to target all application components at once:
+
+```bash
+yarn nx run-many -t test --projects=tag:service
+```
+
+The `service` tag is applied to every application component in the repository.
+
+## Docker Compose
+
+Each service includes a Docker Compose file alongside its source code (for example, `src/ui/docker-compose.yml`). These files are configured to build the image locally before starting the service.
+
+### Run a single component with its dependencies
+
+```bash
+yarn nx compose:up catalog
+```
+
+### Run all services locally
+
+To start every application component from your local repository:
+
+```bash
+yarn nx compose-app:up
+```
+
+To tear everything down:
+
+```bash
+yarn nx compose-app:down
+```

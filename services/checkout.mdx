@@ -1,0 +1,83 @@
+---
+title: "Checkout service: orchestrate purchases"
+description: "The Node.js Checkout service manages checkout session state in Redis and coordinates order creation by calling the Orders service API."
+---
+
+The Checkout service is written in Node.js (NestJS) and orchestrates the checkout flow. It stores session state in Redis (or in-memory) and calls the Orders service to persist a completed order. You can run it without any external dependencies by using the in-memory persistence and the built-in mock Orders implementation.
+
+| Language  | Persistence          |
+|-----------|----------------------|
+| Node.js   | Redis or in-memory   |
+
+## Configuration
+
+Set these environment variables to control the service's behavior:
+
+| Name | Description | Default |
+|------|-------------|---------|
+| `PORT` | The port the server listens on | `8080` |
+| `RETAIL_CHECKOUT_PERSISTENCE_PROVIDER` | Persistence provider. Valid values: `in-memory`, `redis` | `in-memory` |
+| `RETAIL_CHECKOUT_PERSISTENCE_REDIS_URL` | Redis server endpoint for session state | `""` |
+| `RETAIL_CHECKOUT_ENDPOINTS_ORDERS` | Endpoint of the Orders API. If empty, uses a mock implementation | `""` |
+| `RETAIL_CHECKOUT_SHIPPING_NAME_PREFIX` | String prefix applied to the names of shipping options | `""` |
+
+<Note>
+  When `RETAIL_CHECKOUT_ENDPOINTS_ORDERS` is empty, the service uses a built-in mock and does not require the Orders service to be running.
+</Note>
+
+## Chaos endpoints
+
+The Checkout service exposes `/chaos/*` endpoints that let you inject failure conditions for resilience testing:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/chaos/status/{code}` | Forces all API requests to return the given HTTP status code |
+| `DELETE` | `/chaos/status` | Disables the forced status code |
+| `POST` | `/chaos/latency/{delay}` | Adds the specified delay (ms) to all API requests |
+| `DELETE` | `/chaos/latency` | Disables the added latency |
+| `POST` | `/chaos/health` | Causes all health check requests to fail |
+| `DELETE` | `/chaos/health` | Restores normal health check behavior |
+
+<Warning>
+  Chaos endpoints are intended for testing environments only. Do not expose them on production deployments.
+</Warning>
+
+## Running locally
+
+<Steps>
+  <Step title="Install prerequisites">
+    Make sure you have **Node.js 16 or later** installed on your machine.
+  </Step>
+  <Step title="Start the service">
+    From the `src/checkout` directory, install dependencies and start the application:
+
+    ```bash
+    yarn start
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    The API endpoint will be available at `http://localhost:8080`.
+  </Step>
+</Steps>
+
+## Running with Docker Compose
+
+A `docker-compose.yml` file is included in `src/checkout` to run the service in a container:
+
+<Steps>
+  <Step title="Start the container">
+    ```bash
+    docker compose up
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    The API endpoint will be available at `http://localhost:8080`.
+  </Step>
+  <Step title="Stop and clean up">
+    ```bash
+    docker compose down
+    ```
+  </Step>
+</Steps>
+
+For the full API reference, see [Checkout API](/api/checkout).

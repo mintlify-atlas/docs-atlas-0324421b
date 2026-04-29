@@ -1,0 +1,204 @@
+---
+title: "Catalog API: products, tags, and catalog size"
+description: REST API for the retail store product catalog — list products with filtering and pagination, retrieve by ID, list tags, and get catalog size.
+---
+
+The Catalog API exposes the retail store's product catalog over HTTP. You can list products with optional tag filtering, sorting, and pagination; fetch a single product by ID; retrieve all available tags; and query the total number of products in the catalog. All responses are JSON, and errors follow a consistent `code` / `message` structure.
+
+---
+
+## GET /catalog/products
+
+Returns an array of products from the catalog. You can narrow results by tag, control sort order, and paginate through large result sets using the `page` and `size` parameters.
+
+### Parameters
+
+<ParamField query="tags" type="string">
+  Filter products by tag name. Pass a comma-separated list to match products associated with any of the given tags.
+</ParamField>
+
+<ParamField query="order" type="string">
+  Sort order for the returned products. Accepted values depend on the implementation (e.g. `price`, `name`).
+</ParamField>
+
+<ParamField query="page" type="integer">
+  Zero-based page number for pagination. Defaults to the first page when omitted.
+</ParamField>
+
+<ParamField query="size" type="integer">
+  Number of products to return per page. Controls the page size for paginated responses.
+</ParamField>
+
+### Response
+
+Returns an array of `Product` objects.
+
+<ResponseField name="id" type="string">
+  Unique identifier for the product.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Display name of the product.
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  Human-readable description of the product.
+</ResponseField>
+
+<ResponseField name="price" type="integer">
+  Price of the product in the smallest currency unit (e.g. cents).
+</ResponseField>
+
+<ResponseField name="tags" type="Tag[]">
+  List of tags associated with the product.
+
+  <Expandable title="Tag">
+    <ResponseField name="name" type="string">
+      Machine-readable tag identifier.
+    </ResponseField>
+    <ResponseField name="displayName" type="string">
+      Human-readable tag label shown in the UI.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/catalog/products?tags=featured&order=price&page=0&size=10"
+```
+
+### Error responses
+
+| Status | Description |
+|--------|-------------|
+| `400`  | Bad Request — invalid query parameter value. |
+| `404`  | Not Found — no products matched the request. |
+| `500`  | Internal Server Error — unexpected server-side failure. |
+
+---
+
+## GET /catalog/products/{id}
+
+Returns a single product identified by its unique ID.
+
+### Parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the product to retrieve.
+</ParamField>
+
+### Response
+
+Returns a single `Product` object.
+
+<ResponseField name="id" type="string">
+  Unique identifier for the product.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Display name of the product.
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  Human-readable description of the product.
+</ResponseField>
+
+<ResponseField name="price" type="integer">
+  Price of the product in the smallest currency unit (e.g. cents).
+</ResponseField>
+
+<ResponseField name="tags" type="Tag[]">
+  List of tags associated with the product.
+
+  <Expandable title="Tag">
+    <ResponseField name="name" type="string">
+      Machine-readable tag identifier.
+    </ResponseField>
+    <ResponseField name="displayName" type="string">
+      Human-readable tag label shown in the UI.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/catalog/products/PROD001"
+```
+
+### Error responses
+
+| Status | Description |
+|--------|-------------|
+| `400`  | Bad Request — the `id` parameter is malformed. |
+| `404`  | Not Found — no product exists with the given ID. |
+| `500`  | Internal Server Error — unexpected server-side failure. |
+
+---
+
+## GET /catalog/size
+
+Returns the total number of products in the catalog, optionally filtered by tag. Use this endpoint to determine how many pages exist before paginating through `/catalog/products`.
+
+### Parameters
+
+<ParamField query="tags" type="string">
+  Filter the count to only products associated with the given tag name.
+</ParamField>
+
+### Response
+
+<ResponseField name="size" type="integer">
+  The total number of products matching the query, used to calculate pagination offsets.
+</ResponseField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/catalog/size?tags=featured"
+```
+
+### Error responses
+
+| Status | Description |
+|--------|-------------|
+| `400`  | Bad Request — invalid query parameter. |
+| `404`  | Not Found — resource could not be resolved. |
+| `500`  | Internal Server Error — unexpected server-side failure. |
+
+---
+
+## GET /catalog/tags
+
+Returns all tags defined in the catalog. Use this endpoint to populate filter controls or navigation menus in the UI.
+
+### Parameters
+
+This endpoint takes no parameters.
+
+### Response
+
+Returns an array of `Tag` objects.
+
+<ResponseField name="name" type="string">
+  Machine-readable tag identifier used in filter queries.
+</ResponseField>
+
+<ResponseField name="displayName" type="string">
+  Human-readable tag label suitable for display in the UI.
+</ResponseField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/catalog/tags"
+```
+
+### Error responses
+
+| Status | Description |
+|--------|-------------|
+| `400`  | Bad Request — malformed request. |
+| `404`  | Not Found — tags resource not available. |
+| `500`  | Internal Server Error — unexpected server-side failure. |

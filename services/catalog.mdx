@@ -1,0 +1,94 @@
+---
+title: "Catalog service: product data and search"
+description: "The Go-based Catalog service provides the product inventory API backed by MySQL or in-memory storage, with Prometheus metrics enabled by default."
+---
+
+The Catalog service is written in Go and exposes a REST API for retrieving product information. By default it stores data in memory, making it easy to run without any external dependencies. For production-like setups you can point it at a MySQL database. Prometheus metrics are enabled out of the box.
+
+| Language | Persistence          |
+|----------|----------------------|
+| Go       | MySQL or in-memory   |
+
+## Configuration
+
+Set these environment variables to control the service's behavior:
+
+| Name | Description | Default |
+|------|-------------|---------|
+| `PORT` | The port the server listens on | `8080` |
+| `RETAIL_CATALOG_PERSISTENCE_PROVIDER` | Persistence provider. Valid values: `in-memory`, `mysql` | `in-memory` |
+| `RETAIL_CATALOG_PERSISTENCE_ENDPOINT` | Database endpoint URL | `""` |
+| `RETAIL_CATALOG_PERSISTENCE_DB_NAME` | Database name | `catalogdb` |
+| `RETAIL_CATALOG_PERSISTENCE_USER` | Database username | `catalog_user` |
+| `RETAIL_CATALOG_PERSISTENCE_PASSWORD` | Database password | `""` |
+| `RETAIL_CATALOG_PERSISTENCE_CONNECT_TIMEOUT` | Database connection timeout in seconds | `5` |
+
+<Note>
+  When `RETAIL_CATALOG_PERSISTENCE_PROVIDER` is set to `in-memory`, no database connection is required. The service loads a built-in product dataset at startup.
+</Note>
+
+## Chaos endpoints
+
+The Catalog service exposes `/chaos/*` endpoints that let you inject failure conditions for resilience testing:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/chaos/status/{code}` | Forces all API requests to return the given HTTP status code |
+| `DELETE` | `/chaos/status` | Disables the forced status code |
+| `POST` | `/chaos/latency/{delay}` | Adds the specified delay (ms) to all API requests |
+| `DELETE` | `/chaos/latency` | Disables the added latency |
+| `POST` | `/chaos/health` | Causes all health check requests to fail |
+| `DELETE` | `/chaos/health` | Restores normal health check behavior |
+
+<Warning>
+  Chaos endpoints are intended for testing environments only. Do not expose them on production deployments.
+</Warning>
+
+## Running locally
+
+<Steps>
+  <Step title="Install prerequisites">
+    Make sure you have **Go** installed and a **MySQL** database running and accessible.
+  </Step>
+  <Step title="Build the binary">
+    From the `src/catalog` directory, build the Go binary:
+
+    ```bash
+    go build -o main main.go
+    ```
+  </Step>
+  <Step title="Start the service">
+    ```bash
+    ./main
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    ```bash
+    curl localhost:8080/catalogue
+    ```
+  </Step>
+</Steps>
+
+## Running with Docker Compose
+
+A `docker-compose.yml` file is included in `src/catalog` to run the service and a MySQL database together:
+
+<Steps>
+  <Step title="Start the containers">
+    ```bash
+    DB_PASSWORD="testing" docker compose up
+    ```
+  </Step>
+  <Step title="Verify it is running">
+    ```bash
+    curl localhost:8080/catalogue
+    ```
+  </Step>
+  <Step title="Stop and clean up">
+    ```bash
+    docker compose down
+    ```
+  </Step>
+</Steps>
+
+For the full API reference, see [Catalog API](/api/catalog).

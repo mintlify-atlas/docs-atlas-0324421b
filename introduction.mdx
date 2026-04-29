@@ -1,0 +1,61 @@
+---
+title: "AWS Containers Retail Store: what it demonstrates"
+description: "A sample microservices retail app for learning container platforms on AWS, spanning five services across multiple languages and deployment targets."
+---
+
+The AWS Containers Retail Store Sample is an intentionally over-engineered retail application built to demonstrate container orchestration patterns on AWS. It presents a working storefront — with product catalog, shopping cart, and checkout — deliberately decomposed into five independent microservices to showcase real-world heterogeneity in language choice, persistence, and deployment strategy.
+
+## Services
+
+Each service is independently deployable, versioned, and instrumented. Together they form a representative microservices topology you can run locally or on AWS.
+
+| Service | Language | Role |
+|---------|----------|------|
+| UI | Java | Store frontend — serves HTML and aggregates backend API calls |
+| Catalog | Go | Product catalog API |
+| Cart | Java | Shopping cart API |
+| Orders | Java | Order management API |
+| Checkout | Node.js | Checkout orchestration API |
+
+## Deployment options
+
+The application supports multiple deployment targets so you can explore container platforms at different levels of complexity:
+
+- **Docker** — run the UI as a single container with mock backends
+- **Docker Compose** — run the full five-service stack locally
+- **Kubernetes** — deploy to any existing cluster with a single manifest
+- **Amazon EKS** — production-like AWS deployment using Terraform with managed dependencies
+- **Amazon ECS** — Fargate-based deployment on AWS
+- **AWS App Runner** — fully managed deployment with minimal configuration
+
+## Key capabilities
+
+Beyond the storefront itself, the sample includes several features useful for demonstrations and learning:
+
+- **Prometheus metrics** — all components expose metrics endpoints for scraping
+- **OpenTelemetry tracing** — OTLP-compatible distributed tracing across all services
+- **Chaos engineering** — utility endpoints to trigger errors, panics, and CPU stress
+- **Load generator** — exercises the full application stack to simulate traffic
+- **AI chatbot** — generative AI chat interface backed by Amazon Bedrock or any OpenAI-compatible endpoint
+- **Introspection page** — displays environment metadata including AZ, region, and ECS/EC2/Kubernetes context
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Run with Docker" icon="docker" href="/quickstart/docker">
+    Get the UI running locally in seconds with a single Docker command.
+  </Card>
+  <Card title="Run with Docker Compose" icon="layer-group" href="/quickstart/docker-compose">
+    Start all five services together using Docker Compose.
+  </Card>
+  <Card title="Deploy to Kubernetes" icon="dharmachakra" href="/quickstart/kubernetes">
+    Deploy the full stack to an existing Kubernetes cluster.
+  </Card>
+  <Card title="Deploy to EKS" icon="aws" href="/deploy/eks">
+    Use Terraform to deploy on Amazon EKS with managed AWS dependencies.
+  </Card>
+</CardGroup>
+
+<Note>
+  This application is for educational purposes and not intended for production use.
+</Note>

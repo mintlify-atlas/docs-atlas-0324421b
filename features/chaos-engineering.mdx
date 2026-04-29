@@ -1,0 +1,57 @@
+---
+title: "Chaos engineering with utility endpoints"
+description: "Inject HTTP errors, response latency, and health check failures into any retail store service using the built-in chaos API endpoints."
+---
+
+The Catalog, Cart, Orders, and Checkout services all expose chaos engineering endpoints that let you inject faults at runtime without any code changes or restarts. You can force specific HTTP status codes, add artificial latency, or cause health checks to fail — enabling realistic failure scenario demonstrations and resilience testing.
+
+## Chaos endpoints
+
+All four services expose the same set of chaos endpoints:
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/chaos/status/{code}` | Force all API responses to return the given HTTP status code |
+| `DELETE` | `/chaos/status` | Disable the forced status code and restore normal responses |
+| `POST` | `/chaos/latency/{delay}` | Add the specified delay (in milliseconds) to all API responses |
+| `DELETE` | `/chaos/latency` | Remove the artificial latency |
+| `POST` | `/chaos/health` | Cause all health check requests to fail |
+| `DELETE` | `/chaos/health` | Restore normal health check behavior |
+
+## Examples
+
+```bash
+# Inject 500 errors into the cart service
+curl -X POST http://cart:8080/chaos/status/500
+
+# Add 2 seconds of latency to checkout
+curl -X POST http://checkout:8080/chaos/latency/2000
+
+# Cause the catalog service to fail health checks
+curl -X POST http://catalog:8080/chaos/health
+
+# Restore normal behavior
+curl -X DELETE http://catalog:8080/chaos/health
+```
+
+<Note>
+  Chaos state is reset when the container restarts. All injected faults are in-memory only and do not persist across deployments.
+</Note>
+
+<Tip>
+  Combine chaos endpoint injection with the [load generator](/features/load-generator) to observe how upstream services, load balancers, and circuit breakers respond to downstream failures in real time.
+</Tip>
+
+## UI utility endpoints
+
+The UI service exposes a separate set of utility endpoints useful for testing HTTP behavior, debugging request routing, and running CPU stress tests:
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/utility/status/{code}` | Return a response with the specified HTTP status code |
+| `GET` | `/utility/headers` | Echo all HTTP request headers back in the response |
+| `GET` | `/utility/panic` | Shut down the application with an error code |
+| `POST` | `/utility/echo` | Write back the POST payload as the response body |
+| `POST` | `/utility/store` | Write the payload to a file and return its hash |
+| `GET` | `/utility/store/{hash}` | Retrieve a payload previously written via `/utility/store` |
+| `GET` | `/utility/stress/{iterations}` | Run a CPU stress test with the specified number of iterations |

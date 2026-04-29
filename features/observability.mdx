@@ -1,0 +1,79 @@
+---
+title: "Metrics and tracing with Prometheus and OpenTelemetry"
+description: "All retail store services expose Prometheus metrics and support OpenTelemetry OTLP tracing — enable collection via Helm values or Terraform flags."
+---
+
+Every service in the retail store is instrumented for both Prometheus scraping and OpenTelemetry OTLP trace export. You can enable each independently depending on what your observability stack supports.
+
+## Prometheus metrics
+
+Each service exposes a `/metrics` endpoint on port `8080` in the standard Prometheus exposition format. The Helm charts ship with pod annotations that allow Prometheus to discover and scrape these endpoints automatically.
+
+The annotations added to each pod when metrics are enabled:
+
+```yaml
+prometheus.io/scrape: "true"
+prometheus.io/port: "8080"
+prometheus.io/path: "/metrics"
+```
+
+Metrics collection is controlled by the `metrics.enabled` value in each service's Helm chart and defaults to `true`. To disable scraping for a service, set:
+
+```yaml
+metrics:
+  enabled: false
+```
+
+## OpenTelemetry tracing
+
+Distributed tracing is configured through the Helm charts and platform-level Terraform variables.
+
+**Helm chart configuration:**
+
+Set `opentelemetry.enabled` to `true` in a service's Helm values and provide the instrumentation resource name:
+
+```yaml
+opentelemetry:
+  enabled: true
+  instrumentation: ""
+```
+
+**EKS (Terraform):**
+
+Set `opentelemetry_enabled = true` in your Terraform configuration. This installs the AWS Distro for OpenTelemetry addon into the EKS cluster and configures OpenTelemetry collectors and application components automatically.
+
+```hcl
+opentelemetry_enabled = true
+```
+
+**ECS (Terraform):**
+
+Set `opentelemetry_enabled = true` to install the AWS Distro for OpenTelemetry and enable trace collection from ECS tasks.
+
+```hcl
+opentelemetry_enabled = true
+```
+
+## Built-in diagnostic pages
+
+The UI service includes two pages that give you visibility into the running application without any external tooling.
+
+### Application topology (`/topology`)
+
+Accessible at `/topology`, this page shows which components are deployed, their current health status, and information about configured dependencies such as databases and message queues.
+
+### Introspection (`/info`)
+
+Accessible at `/info`, this page displays environment metadata for the container — including availability zone, region, and platform-specific attributes for ECS, EKS, EC2, and Lambda.
+
+You can highlight specific attributes by adding their IDs to the URL:
+
+```
+/info?attr=ecs.cloud.region,ecs.cloud.availability_zone
+```
+
+To find an attribute's ID, hover over the attribute name on the `/info` page — the ID appears as a tooltip.
+
+<Tip>
+  The `/info` introspection page is particularly useful for demonstrating cross-AZ load balancing. Open it in multiple browser tabs and refresh repeatedly — each response shows the AZ of the container that handled the request.
+</Tip>

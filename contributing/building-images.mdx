@@ -1,0 +1,63 @@
+---
+title: "Build and publish container images for all services"
+description: "Use nx to build single or multi-arch container images for any service locally, then publish them to Amazon ECR or any OCI-compatible registry."
+---
+
+Each service in the repository has a `Dockerfile` and a `project.json` with nx targets for building and publishing container images. The `container` target uses [nx-container](https://github.com/gperdomor/nx-tools/tree/main/packages/nx-container) with Docker as the default engine.
+
+## Build a single image
+
+To build the container image for one service, pass the component name to `yarn nx container`:
+
+```bash
+yarn nx container ui
+```
+
+## Build all images in parallel
+
+To build images for every service at the same time, use `run-many` with the `service` tag:
+
+```bash
+yarn nx run-many -t container --projects=tag:service
+```
+
+## Customize image tags
+
+You can override the default image tag by passing `--tags`. The `{projectName}` placeholder is substituted by nx for each project it processes:
+
+```bash
+yarn nx run-many -t container --projects=tag:service \
+  --tags 1234567890.dkr.ecr.us-west-2.amazonaws.com/aws-containers/retail-store-sample-{projectName}:example
+```
+
+<Note>
+  `{projectName}` is an nx placeholder, not a shell variable. nx replaces it with the name of each project at build time, so you do not need to expand it yourself.
+</Note>
+
+## Publish to Amazon ECR
+
+To push an image to an Amazon ECR private repository, use the `publish` configuration and provide a fully-qualified tag:
+
+```bash
+yarn nx container ui \
+  --configuration publish \
+  --tags 1234567890.dkr.ecr.us-west-2.amazonaws.com/aws-containers/retail-store-sample-{projectName}:example
+```
+
+<Warning>
+  ECR repositories must exist before you push. Create each repository in the AWS console or with the AWS CLI before running this command.
+</Warning>
+
+The `publish` configuration also enables multi-arch builds targeting both `linux/amd64` and `linux/arm64`.
+
+## Pre-built images on Amazon ECR Public Gallery
+
+Pre-built images for x86-64 and ARM64 are available on the Amazon ECR Public Gallery. You can pull these directly without building locally:
+
+| Service | Image |
+|---|---|
+| UI | `public.ecr.aws/aws-containers/retail-store-sample-ui` |
+| Catalog | `public.ecr.aws/aws-containers/retail-store-sample-catalog` |
+| Cart | `public.ecr.aws/aws-containers/retail-store-sample-cart` |
+| Orders | `public.ecr.aws/aws-containers/retail-store-sample-orders` |
+| Checkout | `public.ecr.aws/aws-containers/retail-store-sample-checkout` |

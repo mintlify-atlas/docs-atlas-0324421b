@@ -1,0 +1,63 @@
+---
+title: "Deploy the retail store to Kubernetes"
+description: "Deploy the full retail store application to any existing Kubernetes cluster using kubectl and a pre-built manifest from GitHub Releases."
+---
+
+You can deploy all five retail store services to any existing Kubernetes cluster using a single pre-built manifest. The manifest pulls pre-built container images for both x86-64 and ARM64 architectures, so no local build step is required.
+
+## Prerequisites
+
+- A running Kubernetes cluster
+- `kubectl` installed and configured to target the cluster
+
+## Steps
+
+<Steps>
+  <Step title="Apply the manifest">
+    Deploy all services using the latest release manifest:
+
+    ```bash
+    kubectl apply -f https://github.com/aws-containers/retail-store-sample-app/releases/latest/download/kubernetes.yaml
+    ```
+  </Step>
+  <Step title="Wait for deployments to become available">
+    Wait until all deployments report as available:
+
+    ```bash
+    kubectl wait --for=condition=available deployments --all
+    ```
+
+    This command blocks until every deployment is ready. It may take a minute or two for all pods to start and pass their health checks.
+  </Step>
+  <Step title="Get the service URL">
+    Retrieve the external address for the UI service:
+
+    ```bash
+    kubectl get svc ui
+    ```
+
+    Look for the value in the `EXTERNAL-IP` column of the output.
+
+    <Note>
+      If your cluster provisions a cloud load balancer, the external IP or hostname may take several minutes to appear. Re-run the command until `EXTERNAL-IP` shows a value rather than `<pending>`.
+    </Note>
+  </Step>
+  <Step title="Open the store in your browser">
+    Once `EXTERNAL-IP` is populated, open that address in your browser on port 80:
+
+    ```
+    http://<EXTERNAL-IP>
+    ```
+  </Step>
+  <Step title="Remove the application">
+    To delete all resources created by the manifest, run:
+
+    ```bash
+    kubectl delete -f https://github.com/aws-containers/retail-store-sample-app/releases/latest/download/kubernetes.yaml
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  For a production-grade deployment on AWS with managed dependencies like RDS and DynamoDB, use the Terraform modules. See [Deploy to EKS](/deploy/eks) to get started.
+</Tip>

@@ -1,0 +1,238 @@
+---
+title: "Orders API: create and retrieve orders"
+description: REST API for the orders service — create new customer orders and retrieve order history, backed by PostgreSQL with optional SQS event publishing.
+---
+
+The Orders API allows you to submit new orders and retrieve a list of all previously placed orders. Each order contains a shipping address and one or more line items with quantity and cost information. The service persists orders to PostgreSQL and can optionally publish order events to an SQS queue for downstream processing. All request and response bodies are JSON.
+
+---
+
+## GET /orders
+
+Returns a list of all orders. Use this endpoint to retrieve the full order history.
+
+### Parameters
+
+This endpoint takes no parameters.
+
+### Response
+
+Returns an array of `ExistingOrder` objects.
+
+<ResponseField name="id" type="string">
+  Unique identifier assigned to the order by the service.
+</ResponseField>
+
+<ResponseField name="createdDate" type="string">
+  ISO 8601 date-time string indicating when the order was created (e.g. `2024-01-15T10:30:00Z`).
+</ResponseField>
+
+<ResponseField name="shippingAddress" type="object">
+  The shipping destination for the order.
+
+  <Expandable title="ShippingAddress">
+    <ResponseField name="firstName" type="string">
+      Recipient's first name.
+    </ResponseField>
+    <ResponseField name="lastName" type="string">
+      Recipient's last name.
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      Recipient's email address.
+    </ResponseField>
+    <ResponseField name="address1" type="string">
+      Primary street address line.
+    </ResponseField>
+    <ResponseField name="address2" type="string">
+      Secondary address line (apartment, suite, etc.).
+    </ResponseField>
+    <ResponseField name="city" type="string">
+      City name.
+    </ResponseField>
+    <ResponseField name="state" type="string">
+      State or province code.
+    </ResponseField>
+    <ResponseField name="zipCode" type="string">
+      Postal or ZIP code.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="items" type="OrderItem[]">
+  The line items included in the order.
+
+  <Expandable title="OrderItem">
+    <ResponseField name="productId" type="string">
+      The product identifier for this line item.
+    </ResponseField>
+    <ResponseField name="quantity" type="integer">
+      Number of units ordered.
+    </ResponseField>
+    <ResponseField name="unitCost" type="integer">
+      Cost per unit in the smallest currency unit (e.g. cents).
+    </ResponseField>
+    <ResponseField name="totalCost" type="integer">
+      Total cost for this line item (`quantity × unitCost`) in the smallest currency unit.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+```bash
+curl -X GET "http://localhost:8080/orders"
+```
+
+---
+
+## POST /orders
+
+Creates a new order. The service stores the order in PostgreSQL and, if configured, publishes an event to SQS. Returns the persisted order with its assigned ID and creation timestamp.
+
+### Request body
+
+<ParamField body="shippingAddress" type="object" required>
+  The shipping destination for the order.
+
+  <Expandable title="ShippingAddress">
+    <ParamField body="firstName" type="string">
+      Recipient's first name.
+    </ParamField>
+    <ParamField body="lastName" type="string">
+      Recipient's last name.
+    </ParamField>
+    <ParamField body="email" type="string">
+      Recipient's email address.
+    </ParamField>
+    <ParamField body="address1" type="string">
+      Primary street address line.
+    </ParamField>
+    <ParamField body="address2" type="string">
+      Secondary address line (apartment, suite, etc.).
+    </ParamField>
+    <ParamField body="city" type="string">
+      City name.
+    </ParamField>
+    <ParamField body="state" type="string">
+      State or province code.
+    </ParamField>
+    <ParamField body="zipCode" type="string">
+      Postal or ZIP code.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="items" type="array" required>
+  One or more line items to include in the order.
+
+  <Expandable title="OrderItem">
+    <ParamField body="productId" type="string">
+      The product identifier for this line item.
+    </ParamField>
+    <ParamField body="quantity" type="integer">
+      Number of units to order.
+    </ParamField>
+    <ParamField body="unitCost" type="integer">
+      Cost per unit in the smallest currency unit (e.g. cents).
+    </ParamField>
+    <ParamField body="totalCost" type="integer">
+      Total cost for this line item in the smallest currency unit.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+Returns the created `ExistingOrder` object with HTTP `200 OK`.
+
+<ResponseField name="id" type="string">
+  Unique identifier assigned to the new order.
+</ResponseField>
+
+<ResponseField name="createdDate" type="string">
+  ISO 8601 date-time string of when the order was created.
+</ResponseField>
+
+<ResponseField name="shippingAddress" type="object">
+  The shipping address submitted with the order.
+
+  <Expandable title="ShippingAddress">
+    <ResponseField name="firstName" type="string">
+      Recipient's first name.
+    </ResponseField>
+    <ResponseField name="lastName" type="string">
+      Recipient's last name.
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      Recipient's email address.
+    </ResponseField>
+    <ResponseField name="address1" type="string">
+      Primary street address line.
+    </ResponseField>
+    <ResponseField name="address2" type="string">
+      Secondary address line.
+    </ResponseField>
+    <ResponseField name="city" type="string">
+      City name.
+    </ResponseField>
+    <ResponseField name="state" type="string">
+      State or province code.
+    </ResponseField>
+    <ResponseField name="zipCode" type="string">
+      Postal or ZIP code.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="items" type="OrderItem[]">
+  The line items in the created order.
+
+  <Expandable title="OrderItem">
+    <ResponseField name="productId" type="string">
+      The product identifier for this line item.
+    </ResponseField>
+    <ResponseField name="quantity" type="integer">
+      Number of units ordered.
+    </ResponseField>
+    <ResponseField name="unitCost" type="integer">
+      Cost per unit in the smallest currency unit.
+    </ResponseField>
+    <ResponseField name="totalCost" type="integer">
+      Total cost for this line item in the smallest currency unit.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+```bash
+curl -X POST "http://localhost:8080/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shippingAddress": {
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "jane.doe@example.com",
+      "address1": "123 Main St",
+      "address2": "",
+      "city": "Seattle",
+      "state": "WA",
+      "zipCode": "98101"
+    },
+    "items": [
+      {
+        "productId": "PROD001",
+        "quantity": 2,
+        "unitCost": 999,
+        "totalCost": 1998
+      }
+    ]
+  }'
+```
+
+### Error responses
+
+| Status | Description |
+|--------|-------------|
+| `400`  | Bad Request — the request body is missing required fields or contains invalid data. |
+| `500`  | Internal Server Error — the order could not be persisted or the SQS publish failed. |

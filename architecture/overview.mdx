@@ -1,0 +1,66 @@
+---
+title: "Application architecture and component topology"
+description: "How the five retail store microservices connect, what languages and runtimes they use, and how traffic flows from the UI to each backend."
+---
+
+The retail store application is deliberately over-engineered into five loosely coupled microservices, each independently deployable and scalable. Rather than a monolith, the app distributes responsibilities across services that communicate over HTTP APIs — letting you observe, replace, or stress-test individual components without affecting the rest of the stack.
+
+## Components
+
+Each service has a distinct role, language, and set of infrastructure dependencies:
+
+| Component | Language | Description |
+|-----------|----------|-------------|
+| UI | Java | Serves the HTML storefront and aggregates calls to all backend APIs |
+| Catalog | Go | Exposes the product catalog via a REST API |
+| Cart | Java | Manages customer shopping carts |
+| Orders | Java | Stores and retrieves customer orders |
+| Checkout | Node.js | Orchestrates the checkout flow and calls the Orders service |
+
+## How the services interconnect
+
+The UI is the single entry point for browser traffic. It calls the Catalog, Cart, Orders, and Checkout APIs directly. The Checkout service in turn calls the Orders service to persist a completed order. No other cross-service calls exist.
+
+```
+Browser → UI → Catalog
+              → Cart
+              → Orders
+              → Checkout → Orders
+```
+
+## Mock mode
+
+By default, every backend endpoint in the UI is set to `false`, which enables a built-in mock implementation for that service. This lets you run a single UI container without any backend dependencies.
+
+To connect the UI to a real backend, set the corresponding environment variable to the service's base URL:
+
+| Environment variable | Backend service |
+|----------------------|-----------------|
+| `RETAIL_UI_ENDPOINTS_CATALOG` | Catalog |
+| `RETAIL_UI_ENDPOINTS_CARTS` | Cart |
+| `RETAIL_UI_ENDPOINTS_ORDERS` | Orders |
+| `RETAIL_UI_ENDPOINTS_CHECKOUT` | Checkout |
+
+<Note>
+  When a variable is set to `false` (the default), the UI silently substitutes hardcoded mock data. No error is shown to the user.
+</Note>
+
+## Container images
+
+Pre-built images for both x86-64 and ARM64 architectures are published to Amazon ECR Public under the `public.ecr.aws/aws-containers/` namespace:
+
+| Service | Image |
+|---------|-------|
+| UI | `public.ecr.aws/aws-containers/retail-store-sample-ui` |
+| Catalog | `public.ecr.aws/aws-containers/retail-store-sample-catalog` |
+| Cart | `public.ecr.aws/aws-containers/retail-store-sample-cart` |
+| Orders | `public.ecr.aws/aws-containers/retail-store-sample-orders` |
+| Checkout | `public.ecr.aws/aws-containers/retail-store-sample-checkout` |
+
+## Helm charts
+
+Each service ships a Helm chart published to ECR, making it straightforward to deploy individual services to Kubernetes independently. Chart URLs follow the pattern `public.ecr.aws/aws-containers/retail-store-sample-<service>-chart`.
+
+<Tip>
+  For per-service configuration details — environment variables, default ports, and utility endpoints — see the individual service pages: [UI](/services/ui), [Catalog](/services/catalog), [Cart](/services/cart), [Orders](/services/orders), [Checkout](/services/checkout).
+</Tip>
